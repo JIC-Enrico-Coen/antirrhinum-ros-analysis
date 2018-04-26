@@ -1,0 +1,571 @@
+---
+title: "ROS-EL RNAseq"
+author: "Hugo Tavares"
+date: "14 April 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message = FALSE}
+library(DESeq2)
+library(tidyverse)
+library(ggrepel)
+library(UpSetR)
+
+# Change some of ggplot defaults
+theme_set(theme_bw() +
+            theme(panel.grid = element_blank()))
+
+# Source custom functions
+source("./functions/pca_deseq.R")
+
+# Vector with colours for flowers
+flower_cols <- c("#feebe2", "#fbb4b9", "#f768a1", "#91003f")
+```
+
+
+# Read data
+
+Here, we load several pre-processed data (see script `01_data_processing.R`).
+
+```{r}
+# Anthocianin genes
+anthocyanin <- read_csv("../../../data/rnaseq_buds/anthocyanin_gene_ids.csv")
+
+# Sample info
+sample_info <- read_csv("../../../data/rnaseq_buds/sample_info.csv") %>% 
+  mutate(phenotype = factor(phenotype) %>% reorder(phenotype_order))
+
+# Rlog-normalised counts
+rlog_all <- read_rds("./processed_data/DESeqTransform_all.rds")
+cts_all <- read_csv("./processed_data/counts_rlog_all.csv")
+```
+
+Also load the gene annotation, to extract those genes that fall within the ROS-EL 
+scaffold:
+
+```{r}
+getGff2Attribute <- function(gff, attribute){
+  str_extract(gff, paste0(attribute, " .*")) %>% 
+    str_remove(" ;.*") %>% 
+    str_remove(paste0(attribute, " "))
+}
+
+rosel_genes <- read_tsv("../../../data/rnaseq_buds/amajus.chr.IGDBv1_mapped_to_JICv1.gff2",
+              comment = "#",
+              col_names = c("seqid", "source", "type", "start", "end", "score", "strand", "phase", "attributes"))
+
+rosel_genes <- rosel_genes %>%
+  mutate(id = getGff2Attribute(attributes, "sequence"),
+         base_name = str_remove(id, "\\.T.*$"),
+         similarity = getGff2Attribute(attributes, "similarity") %>% as.numeric)
+
+# Multi-hits
+multi_hits <- rosel_genes %>% 
+  count(id) %>% filter(n > 1) %>% pull(id)
+
+# Filter them out
+rosel_genes <- rosel_genes %>% filter(!(id %in% multi_hits) & 
+                                        seqid == "ros_assembly")
+
+```
+
+
+# Sample clustering
+
+We start by doing some clustering of our samples. 
+
+```{r}
+cts_mat <- cts_all %>% 
+  select(gene, library, cts) %>% 
+  spread(library, cts)
+
+rownames(cts_mat) <- cts_mat$gene
+
+cts_mat <- cts_mat %>% 
+  select(-gene) %>% 
+  as.matrix(cts_mat)
+
+# distance
+lib_dist <- as.dist(1 - cor(cts_mat, method = "spearman"))
+
+# clustering
+lib_clust <- hclust(lib_dist)
+```
+
+```{r}
+plot(lib_clust)
+```
+
+We can see that LIB6740 is a bit of an outlier, although if we look at Spearman's correlation,
+it's still 0.98
+
+```{r}
+cor(cts_mat, method = "spearman") %>% round(2)
+```
+
+We produce a visualisation in the paper based on this clustering:
+
+```{r}
+dend_data <- ggdendro::dendro_data(lib_clust)
+
+dend_data$labels <- full_join(dend_data$labels, sample_info, by = c("label" = "tgac_library_name"))
+
+ggplot() + 
+  geom_segment(data = dend_data$segments, aes(x = x, y = y, xend = xend, yend = yend)) +
+  geom_text(data = dend_data$labels, aes(x = x, y = y - 0.0005, label = ros_el), hjust = 1, vjust = 0.5) +
+  geom_point(data = dend_data$labels, aes(x = x, y = y, fill = phenotype), shape = 21, size = 4) +
+  scale_fill_manual(values = flower_cols) +
+  theme(legend.position = "none") +
+  scale_y_continuous(limits = c(-0.005, 0.025)) +
+  scale_x_continuous(limits = c(-0.5, 21)) +
+  coord_flip() + 
+  theme_void() +
+  theme(legend.position = c(1, 1), legend.justification = c(1, 1))
+```
+
+Clustering using PCA gives a similar perspective:
+
+```{r}
+# Run PCA function on DESeq normalised counts
+pca_all <- prcomp(rlog_all, ntop = Inf)
+
+# Plot PCA result
+pca_all$vectors %>% 
+  mutate(phenotype = factor(phenotype) %>% reorder(phenotype_order)) %>% 
+  ggplot(aes(PC1, PC2, fill = phenotype)) +
+  geom_point(size = 3, shape = 21) +
+  scale_fill_manual(values = flower_cols) +
+  ggrepel::geom_text_repel(aes(label = sample_id))
+```
+
+This reveals that one of the samples is largely removed from the rest along PC1,
+which explains ~25% of the variance in the data. 
+At the moment we lack a functional annotation, so we cannot tell why that sample is 
+such an outlier from the rest. 
+
+```{r}
+pca_all$values %>% 
+  ggplot(aes(PC, cum_var, group = 1)) +
+  geom_line() +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(x = "", y = "Cumulative variance explained") +
+  theme_bw() +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank()) +
+  scale_y_continuous(breaks = seq(0, 1, 0.2))
+```
+
+At higher PCs, other samples start to get distinguished from the bulk.
+Overall, there's no clear clustering based on phenotype.
+
+```{r}
+pca_all$vectors %>% 
+  mutate(phenotype = factor(phenotype) %>% reorder(phenotype_order)) %>% 
+  ggplot(aes(PC2, PC3, fill = phenotype)) +
+  geom_point(size = 3, shape = 21) +
+  scale_fill_manual(values = c("#feebe2", "#fbb4b9", "#f768a1", "#c51b8a")) 
+```
+
+
+# Differential expression analysis
+
+We used DESeq2 to run Walt tests using two factors:
+
+* ROS genotype - with 3 levels:
+    * dominant alleles (JI7 stock and pseudomajus)
+    * recessive alleles (dorsea stock and striatum)
+    * "pale" allele (recombinant allele with part striatum part pseudomajus)
+* EL genotype - with 2 levels:
+    * dominant alleles (striatum)
+    * recessive alleles (JI7, dorsea, pseudomajus)
+
+We used several samples with different combinations of the two alleles. By doing 
+the contrast at the functional allele level (dominant vs recessive), we should
+only pick consistent differences due to the genotypes at these loci, whereas 
+other genotype-specific effects should be absorved in the variance of counts 
+(because these individuals are inevitably in different genetic backgrounds, 
+despite sharing some family history, but 
+obvioulsly come from different parts of the pedigree).
+
+We present the results using all samples, but also show that this is robust to 
+the removal of the "outlier" sample point at above.
+
+```{r}
+# Read DESeq results - attach the gene names for known anthocyanin genes
+res_all <- read_csv("./processed_data/deseq_tests_all.csv") %>% 
+  full_join(anthocyanin, by = "gene_id")
+res_outlier <- read_csv("./processed_data/deseq_tests_outlier.csv") %>% 
+  full_join(anthocyanin, by = "gene_id")
+```
+
+Diagram showing the overlap between results:
+
+```{r}
+res_all %>% 
+  filter(padj < 0.05) %>% 
+  select(gene_id, contrast) %>% 
+  mutate(sig = 1) %>% 
+  spread(contrast, sig, fill = 0) %>% 
+  as.data.frame() %>% 
+  upset()
+```
+
+This shows that only 18 genes are found in both sets of comparisons, whereas most 
+genes are unique to one or the other comparison. 
+
+And MA plots for each:
+
+```{r}
+res_all %>% 
+  mutate(sig = ifelse(padj2 < 0.05, log2FoldChange, NA),
+         sig_ros = ifelse(padj2 < 0.05 & gene_id %in% rosel_genes$base_name, log2FoldChange, NA),
+         rosel = ifelse(gene_name %in% anthocyanin$gene_name & padj2 < 0.05, log2FoldChange, NA)) %>% 
+  ggplot(aes(log2(baseMean), log2FoldChange)) +
+  geom_point(size = 0.5, colour = "grey") +
+  geom_point(aes(y = sig), colour = "black") +
+  geom_point(aes(y = sig_ros), colour = "brown") +
+  geom_point(aes(y = rosel), colour = "brown", shape = 21, size = 4) +
+  geom_text(aes(y = rosel, label = gene_name), hjust = 0, vjust = 0, nudge_y = 0.2, nudge_x = 0.2) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_grid(~ contrast)
+```
+
+```{r}
+res_all %>% 
+  mutate(sig = ifelse(padj2 < 0.05, log2FoldChange, NA),
+         rosel = ifelse(gene_name %in% c("Ros1", "El", "Anthocyanidin_hydroxylase"), log2FoldChange, NA)) %>% 
+  ggplot(aes(log2(baseMean), log2FoldChange)) +
+  geom_point(size = 0.5, colour = "grey") +
+  ggrepel::geom_text_repel(aes(y = rosel, label = gene_name)) +
+  geom_point(aes(y = sig), colour = "black") +
+  geom_point(aes(y = rosel), colour = "brown", shape = 21, size = 4) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_grid(~ contrast)
+```
+
+```{r}
+res_all %>% 
+  filter(contrast == "EL vs el") %>% 
+  arrange(padj2) %>% 
+  slice(1:10)
+```
+
+
+Here is the diagram for results exluding the "outlier" sample:
+
+```{r}
+res_outlier %>% 
+  filter(padj < 0.05) %>% 
+  select(gene_id, contrast) %>% 
+  mutate(sig = 1) %>% 
+  spread(contrast, sig, fill = 0) %>% 
+  as.data.frame() %>% 
+  upset()
+```
+
+```{r}
+res_outlier %>% 
+  mutate(sig = ifelse(padj2 < 0.05, log2FoldChange, NA),
+         rosel = ifelse(gene_name %in% anthocyanin$gene_name & padj2 < 0.05, log2FoldChange, NA)) %>% 
+  ggplot(aes(log2(baseMean), log2FoldChange)) +
+  geom_point(size = 0.5, colour = "grey") +
+  geom_point(aes(y = sig), colour = "black") +
+  geom_point(aes(y = rosel), colour = "brown", shape = 21, size = 4) +
+  geom_text(aes(y = rosel, label = gene_name), hjust = 0, vjust = 0, nudge_y = 0.2, nudge_x = 0.2) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_grid(~ contrast)
+```
+
+
+## Looking at genes in the ROS assembly scaffold
+
+The main purpose of this experiment was to find a candidate gene for ELUTA locus, 
+which was fine-mapped to a ~50Kb interval. 
+
+First, we confirm that ROS is differentially expressed between ROS genotypes,
+but not between groups carrying different EL genotypes:
+
+```{r}
+# including all samples
+res_all %>% filter(gene_name == "Ros1") %>% select(contrast, padj2, baseMean, log2FoldChange) %>% mutate(fc = 2^log2FoldChange)
+```
+
+This is still the case if we remove the "outlier" sample:
+
+```{r}
+res_outlier %>% filter(gene_name == "Ros1") %>% select(contrast, padj2, baseMean, log2FoldChange) %>% mutate(fc = 2^log2FoldChange)
+```
+
+We then consider all genes that are located in the "ros_assembly" scaffold:
+
+```{r}
+res_all %>% filter(gene_name %in% anthocyanin$gene_name) %>% 
+  select(contrast, padj2, baseMean, log2FoldChange, gene_name) %>% mutate(fc = 2^log2FoldChange)
+```
+
+
+```{r}
+cts_all %>% 
+  select(-ros_el) %>% 
+  left_join(select(sample_info, tgac_library_name, ros_el), by = c("library" = "tgac_library_name")) %>% 
+  full_join(anthocyanin, by = c("gene" = "gene_id")) %>% 
+  filter(gene_name %in% c("Ros1", "El") | gene %in% c("AnMG0000140910.01", "AnMG0000147400.01")) %>% 
+  mutate(gene_name = str_replace(gene_name, "_", " ")) %>% 
+  mutate(rosel_alleles = factor(rosel_alleles) %>% reorder(phenotype_order),
+         gene_name = factor(gene_name, levels = c("Ros1", "Anthocyanidin hydroxylase", "El")),
+         phenotype = factor(phenotype) %>% reorder(phenotype_order)) %>% 
+  group_by(gene) %>% 
+  mutate(cts = scale(cts)) %>% 
+  ungroup() %>% 
+  ggplot(aes(ros_el, cts, fill = phenotype)) +
+  geom_point(size = 3, shape = 21) +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey") +
+  facet_grid(~ gene) +
+  labs(x = "ROS-EL alleles", y = "z-score", fill = "Phenotype") +
+  scale_fill_manual(values = flower_cols) +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = -0.06, size = 12, face = "bold", 
+                                            margin = margin(t = -5, b = 1)),
+        plot.subtitle = element_text(size = 10, hjust = 0.5)) +
+  labs(title = "C")
+
+```
+
+
+## Paper figures
+
+This makes some of the plots shown in the paper. the  (further arranged in Inkscape)
+
+```{r}
+# Dendrogram
+p1 <- ggplot() + 
+  geom_segment(data = dend_data$segments, aes(x = x, y = y, xend = xend, yend = yend)) +
+  geom_text(data = dend_data$labels, aes(x = x, y = y - 0.0005, label = ros_el), hjust = 1, vjust = 0.5) +
+  geom_point(data = dend_data$labels, aes(x = x, y = y, fill = phenotype), shape = 21, size = 4) +
+  scale_fill_manual(values = flower_cols) +
+  theme(legend.position = "none") +
+  scale_y_continuous(limits = c(-0.005, 0.025)) +
+  scale_x_continuous(limits = c(-0.5, 21)) +
+  coord_flip() + 
+  theme_void() +
+  theme(legend.position = c(1, 1), legend.justification = c(1, 1))
+
+# PCA with all samples
+p2 <- pca_all$vectors %>% 
+  ggplot(aes(PC1, PC2, fill = phenotype)) +
+  geom_point(size = 3, shape = 21) +
+  #ggrepel::geom_text_repel(aes(label = sample_id)) +
+  labs(x = paste0("PC1 (", round(pca_all$values$var_pct[1]*100), "%)"),
+       y = paste0("PC2 (", round(pca_all$values$var_pct[2]*100), "%)")) +
+  scale_fill_manual(values = c("#feebe2", "#fbb4b9", "#f768a1", "#c51b8a")) +
+  theme(legend.position = "none")
+
+# MA plot that shows ROS and EL in the context of the other genes
+p3 <- res_all %>% 
+  mutate(sig = ifelse(padj2 < 0.05, log2FoldChange, NA),
+         rosel = ifelse(gene_name %in% anthocyanin$gene_name & padj2 < 0.05, log2FoldChange, NA)) %>% 
+  ggplot(aes(log2(baseMean), log2FoldChange)) +
+  geom_point(size = 0.5, colour = "grey") +
+  geom_point(aes(y = sig), colour = "black") +
+  geom_point(aes(y = rosel), colour = "steelblue", shape = 21, size = 4) +
+  geom_text(aes(y = rosel, label = gene_name), hjust = 0, vjust = 0, nudge_y = 0.2, nudge_x = 0.2) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_grid(~ contrast)
+
+# # PCA excluding one putative "outlier"
+# p2 <- pca_outlier$vectors %>% 
+#   mutate(phenotype = factor(phenotype) %>% reorder(phenotype_order)) %>% 
+#   ggplot(aes(PC1, PC2, fill = phenotype)) +
+#   geom_point(size = 3, shape = 21) +
+#   labs(x = paste0("PC1 (", round(pca_outlier$values$var_pct[1]*100), "%)"),
+#        y = paste0("PC2 (", round(pca_outlier$values$var_pct[2]*100), "%)")) +
+#   scale_fill_manual(values = c("#feebe2", "#fbb4b9", "#f768a1", "#c51b8a")) +
+#   theme(legend.position = "none")
+ 
+# Plot individual gene's expression across all samples
+p4 <- tpm_all %>% 
+  right_join(anthocyanin, by = c("gene" = "gene_id")) %>% 
+  filter(gene_name %in% c("Ros1", "Pallida", "Anthocyanidin_hydroxylase", "El")) %>% 
+  mutate(gene_name = str_replace(gene_name, "_", " ")) %>% 
+  mutate(rosel_alleles = factor(rosel_alleles) %>% reorder(phenotype_order),
+         gene_name = factor(gene_name, levels = c("Ros1", "Pallida", "Anthocyanidin hydroxylase", "El"))) %>% 
+  ggplot(aes(rosel_alleles, log2(cts + 1), fill = phenotype)) +
+  geom_point(size = 3, shape = 21) +
+  facet_wrap(~ gene_name, scales = "free") +
+  labs(x = "ROS-EL alleles", y = "TPM (log2)", fill = "Phenotype") +
+  scale_fill_manual(values = c("#feebe2", "#fbb4b9", "#f768a1", "#c51b8a")) +
+  theme(legend.position = "none")
+
+pdf("./plots/rnaseq_plots.pdf", width = 7, height = 9)
+gridExtra::grid.arrange(gridExtra::arrangeGrob(p1, p2, ncol = 2), p3, p4, ncol = 1)
+dev.off()
+```
+
+```{r}
+ggplot() + 
+  geom_segment(data = dend_data$segments, aes(x = x, y = y, xend = xend, yend = yend)) +
+  geom_text(data = dend_data$labels, aes(x = x, y = y - 0.001, label = ros_el), hjust = 1, vjust = 0.5, angle = 49) +
+  geom_point(data = dend_data$labels, aes(x = x, y = y, fill = phenotype), shape = 21, size = 4) +
+  scale_fill_manual(values = flower_cols) +
+  theme(legend.position = "none") +
+  scale_y_continuous(limits = c(-0.005, 0.025)) +
+  scale_x_continuous(limits = c(-0.5, 21)) +
+  theme_void() +
+  theme(legend.position = c(1, 1), legend.justification = c(1, 1))
+
+```
+
+
+```{r}
+# Dendrogram
+p1 <- ggplot() + 
+  geom_segment(data = dend_data$segments, aes(x = x, y = y, xend = xend, yend = yend)) +
+  geom_text(data = dend_data$labels, aes(x = x, y = y - 0.001, label = ros_el), hjust = 1, vjust = 0.5, angle = 49) +
+  geom_point(data = dend_data$labels, aes(x = x, y = y, fill = phenotype), shape = 21, size = 4) +
+  scale_fill_manual(values = flower_cols) +
+  theme(legend.position = "none") +
+  scale_y_continuous(limits = c(-0.005, 0.025)) +
+  scale_x_continuous(limits = c(-0.5, 21)) +
+  theme_void() +
+  theme(legend.position = c(1, 1), legend.justification = c(1, 1),
+        plot.title = element_text(vjust = 1, size = 12, face = "bold", 
+                                            margin = margin(t = -1, b = 1))) +
+  labs(title = "A")
+
+# MA plot that shows ROS and EL in the context of the other genes
+p3 <- res_all %>% 
+  mutate(sig = ifelse(padj2 < 0.05, log2FoldChange, NA),
+         rosel = ifelse(gene_name %in% anthocyanin$gene_name & padj2 < 0.05, log2FoldChange, NA),
+         contrast = factor(contrast, levels = c("ROS vs ros", "EL vs el"))) %>% 
+  mutate(gene_name = str_replace(gene_name, "Anthocyanidin_hydroxylase", "ANS")) %>% 
+  ggplot(aes(log2(baseMean), log2FoldChange)) +
+  geom_point(size = 0.5, colour = "grey") +
+  geom_point(aes(y = sig), colour = "black") +
+  geom_point(aes(y = rosel), colour = "steelblue", shape = 21, size = 4) +
+  geom_text(aes(y = rosel, label = gene_name), hjust = 0, vjust = 0, nudge_y = 0.2, nudge_x = 0.2) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_grid(~ contrast) +
+  labs(title = "B", x = "Mean normalised counts (log2)", y = "Fold chance (log2)") +
+  theme(plot.title = element_text(hjust = -0.06, size = 12, face = "bold", 
+                                            margin = margin(t = -5, b = 1)))
+
+# Plot individual gene's expression across all samples
+p4 <- cts_all %>% 
+  select(-ros_el) %>% 
+  left_join(select(sample_info, tgac_library_name, ros_el), by = c("library" = "tgac_library_name")) %>% 
+  right_join(anthocyanin, by = c("gene" = "gene_id")) %>% 
+  filter(gene_name %in% c("Ros1", "El")) %>% 
+  mutate(gene_name = str_replace(gene_name, "_", " ")) %>% 
+  mutate(rosel_alleles = factor(rosel_alleles) %>% reorder(phenotype_order),
+         gene_name = factor(gene_name, levels = c("Ros1", "Anthocyanidin hydroxylase", "El")),
+         phenotype = factor(phenotype) %>% reorder(phenotype_order)) %>% 
+  group_by(gene) %>% 
+  mutate(cts = scale(cts)) %>% 
+  ungroup() %>% 
+  ggplot(aes(ros_el, cts, fill = phenotype)) +
+  geom_point(size = 3, shape = 21) +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey") +
+  facet_grid(~ gene_name) +
+  labs(x = "ROS-EL alleles", y = "z-score", fill = "Phenotype") +
+  scale_fill_manual(values = flower_cols) +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = -0.06, size = 12, face = "bold", 
+                                            margin = margin(t = -5, b = 1)),
+        plot.subtitle = element_text(size = 10, hjust = 0.5)) +
+  labs(title = "C")
+
+png("./plots/rnaseq_plots.png", width = 7, height = 9, units = "in", res = 600)
+gridExtra::grid.arrange(p1, p3, p4, ncol = 1)
+dev.off()
+
+```
+
+The overlaps between tests, referred to in the legend, are based on this comparison:
+
+```{r}
+res_all %>% 
+  filter(padj2 < 0.05) %>% 
+  split(.$contrast) %>% 
+  map(function(i) pull(i, gene_id)) %>%  
+  gplots::venn()
+```
+
+```{r}
+res_all %>% 
+  filter(padj2 < 0.05) %>% 
+  count(contrast, sign(log2FoldChange))
+```
+
+```{r}
+res_all %>% 
+  filter(padj2 < 0.05) %>% 
+  count(contrast)
+```
+
+
+Fold-change
+
+```{r}
+res_all %>% 
+  filter(padj2 < 0.05 & !is.na(gene_name)) %>% 
+  select(log2FoldChange, lfcSE, gene_name) %>% 
+  mutate(fc = 2^log2FoldChange,
+         fcSE = 2^lfcSE)
+```
+
+
+# Read stats
+
+```{r}
+reads <- read_csv("~/mount/hpc_slcu/jic/rosel_rnaseq/data/rnaseq_buds/reads/filtered/cutadapt_read_stats.csv",
+                  col_names = c("library", "type", "count"))
+```
+
+Mean percent retained:
+
+```{r}
+reads %>% 
+  filter(type %in% c("Total reads processed", "Reads written")) %>% 
+  spread(type, count) %>% 
+  mutate(pct = `Reads written`/`Total reads processed`*100) %>% 
+  summarise(median = median(pct),
+            mean = mean(pct),
+            min = min(pct),
+            max = max(pct))
+```
+
+Total reads
+
+```{r}
+reads %>% 
+  filter(type %in% c("Total reads processed", "Reads written")) %>% 
+  spread(type, count) %>% 
+  mutate(pct = `Reads written`/`Total reads processed`*100) %>% 
+  mutate(library = factor(library) %>% reorder(pct)) %>% View
+  ggplot(aes(library, `Reads written`)) +
+  geom_col() +
+  coord_flip()
+```
+
+```{r}
+reads %>% 
+  filter(type %in% c("Total reads processed", "Reads written")) %>% 
+  spread(type, count) %>% 
+  mutate(pct = `Reads written`/`Total reads processed`*100) %>% 
+  mutate(library = factor(library) %>% reorder(pct)) %>% 
+  summary()
+```
+
+
+```{r}
+reads %>% 
+  filter(type %in% c("Total reads processed", "Reads written")) %>% 
+  spread(type, count) %>% 
+  mutate(pct = `Reads written`/`Total reads processed`*100) %>% 
+  arrange(pct)
+```
+
