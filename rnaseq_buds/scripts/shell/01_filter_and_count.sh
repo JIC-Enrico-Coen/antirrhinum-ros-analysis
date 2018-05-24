@@ -107,6 +107,6 @@ do
     -l  U \
     -r ./filtered/${SAMPLE}.fq.gz \
     --output ../counts/${SAMPLE} \
-    -- seqBias --posBias \
+    --seqBias --posBias \
     --threads ${SLURM_NTASKS}
 done
