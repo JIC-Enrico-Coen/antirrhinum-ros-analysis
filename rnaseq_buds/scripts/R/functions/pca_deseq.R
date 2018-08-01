@@ -1,8 +1,16 @@
 #' Perform Principal Components Analysis on a DESeqTransform object
 #' 
+#' This function is based on the `DESeq2::plotPCA()` function, but returns the 
+#' results of `prcomp` in a tidy list format. This is more flexible for further 
+#' custom plotting and exploring factor loadings of the PCA.
+#' 
 #' @param x an object of class DESeqTransform
-#' @ntop number of most-variable genes to select
-prcomp.DESeqTransform <- function(x, ntop = 500, genes = NULL, ...){
+#' @ntop number of most-variable genes to select. Igored if "genes" is specified.
+#' @genes character vector of specific genes to use
+#' 
+#' @return a list with four `data.frame` objects: eigen_vectors, eigen_values, 
+#' factor_loadings and the original data.
+prcomp.DESeqTransform <- function(x, ntop = 500L, genes = NULL, ...){
   
   # Get sample info
   sample_info <- colData(x) %>% as.data.frame()
@@ -25,6 +33,7 @@ prcomp.DESeqTransform <- function(x, ntop = 500, genes = NULL, ...){
     
     # select the ntop genes by variance
     selected_genes <- order(rv, decreasing=TRUE)[seq_len(min(ntop, length(rv)))]
+    
   } else {
     message("Using all ", nrow(x), " genes.")
     selected_genes <- 1:nrow(x)
@@ -40,7 +49,7 @@ prcomp.DESeqTransform <- function(x, ntop = 500, genes = NULL, ...){
   #### Eigen vectors table ####
   # Get sample information from DESeq x
   # and bind the PCA vectors
-  eigen_vectors <- sample_info %>% 
+  pc_scores <- sample_info %>% 
     bind_cols(as.data.frame(pca$x))
   
   #### Eigen values table ####
@@ -62,8 +71,8 @@ prcomp.DESeqTransform <- function(x, ntop = 500, genes = NULL, ...){
     select(gene, everything())
   
   # Return a list with each of these xs
-  return(list(vectors = eigen_vectors, 
-              values = eigen_values, 
+  return(list(pc_scores = pc_scores, 
+              eigen_values = eigen_values, 
               loadings = factor_loadings,
               original = selected_expr))
   

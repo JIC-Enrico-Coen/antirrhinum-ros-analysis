@@ -88,7 +88,7 @@ rosel_genes <- rosel_genes %>%
 # Some transcripts were aligned to more than one target
 ## even though I asked it to retrieve only the best hit, but maybe sometimes there were ties
 multi_hits <- rosel_genes %>% 
-  count(id) %>% filter(n > 1) %>% pull(id)
+  dplyr::count(id) %>% filter(n > 1) %>% pull(id)
 
 # Filter out the multi-hits and retain only those from the "ros_assembly" scaffold
 rosel_genes <- rosel_genes %>% filter(!(id %in% multi_hits) & 
