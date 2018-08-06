@@ -1,0 +1,993 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 11.1' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     38091,        985]
+NotebookOptionsPosition[     35216,        931]
+NotebookOutlinePosition[     35603,        948]
+CellTagsIndexPosition[     35560,        945]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["SI #: Significance of clustering ", "Section",
+ CellChangeTimes->{{3.703928309423992*^9, 3.703928316820919*^9}, {
+   3.703932095039837*^9, 3.703932098189877*^9}, {3.703933785730812*^9, 
+   3.70393379043447*^9}, {3.705023060406654*^9, 3.7050230683648376`*^9}, 
+   3.7422964039280567`*^9},ExpressionUUID->"be8b6c72-aa5c-48d1-8cc8-\
+1c602e27d200"],
+
+Cell[TextData[{
+ "Adaptive alleles can resist gene flow more effectively if they are linked.  \
+Thus, if the selected loci responsible for divergence are seen to be \
+clustered on the genetic map, or involved with chromosomal rearrangements \
+that suppress recombination, this suggests that divergence occurred despite \
+gene flow (Rieseberg, 2001).  However, while there are good examples where \
+chromosome rearrangements are associated with selected divergence, evidence \
+for clustering is unclear (Yeaman et al., 2016).  In the hybrid zone between ",
+ StyleBox["Antirrhinum majus",
+  FontSlant->"Italic"],
+ " ",
+ StyleBox["striatum ",
+  FontSlant->"Italic"],
+ "and ",
+ StyleBox["pseudomajus",
+  FontSlant->"Italic"],
+ ", ROS and EL are closely linked.  Is this significant evidence for \
+clustering?  Specifically, what is the probability that the closest pair of \
+",
+ Cell[BoxData[
+  FormBox["k", TraditionalForm]],ExpressionUUID->
+  "4693364f-3837-4414-98d7-2b0b75697c4b"],
+ " loci are closer than \[Epsilon] apart?"
+}], "Text",
+ CellChangeTimes->{{3.7039322159461937`*^9, 3.7039325203050413`*^9}, {
+  3.7050239968720207`*^9, 3.705024012592889*^9}, {3.7050248816778307`*^9, 
+  3.7050248924276733`*^9}},ExpressionUUID->"acda0d2f-3213-4e27-ac0b-\
+63952d564c17"],
+
+Cell[TextData[{
+ "Assume that ",
+ Cell[BoxData[
+  FormBox["k", TraditionalForm]],ExpressionUUID->
+  "02acd923-81ea-49e8-bc61-9af0ec475c2b"],
+ " loci, falling uniformly on a map of length ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"R", ".", " "}], TraditionalForm]],ExpressionUUID->
+  "c8294a79-0936-4c41-8d00-aa1182b7622c"],
+ " Then, the gaps between them are distributed exponentially with rate ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"k", "/", "R"}], TraditionalForm]],ExpressionUUID->
+  "2cc358ac-76be-4d81-8c4e-97f6ff4ff8e3"],
+ ", .  What is the probability that the ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"(", 
+    RowBox[{"k", "-", "1"}], ")"}], TraditionalForm]],ExpressionUUID->
+  "c1ebbf46-679d-4ad7-b44d-6ff04a2198dd"],
+ " gaps are all greater than \[Epsilon] ?  The chance that one gap is larger \
+than \[Epsilon] is \[VeryThinSpace]",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"exp", "[", 
+    RowBox[{
+     RowBox[{"-", "k"}], "\[VeryThinSpace]", 
+     RowBox[{"\[Epsilon]", "/", "R"}]}], "]"}], TraditionalForm]],
+  ExpressionUUID->"255e01a2-4258-43da-a968-dd806ac8a22f"],
+ ", and so the chance that ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"(", 
+    RowBox[{"k", "-", "1"}], ")"}], TraditionalForm]],ExpressionUUID->
+  "2a3daaa0-d9d9-4c88-88cf-9e11fb2716e9"],
+ " are all larger is \[VeryThinSpace]",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"exp", "[", 
+    RowBox[{
+     RowBox[{"-", 
+      RowBox[{"k", "(", 
+       RowBox[{"k", "-", "1"}], ")"}]}], " ", 
+     RowBox[{"\[Epsilon]", "/", "R"}]}], "]"}], TraditionalForm]],
+  ExpressionUUID->"ad69c1a8-f13b-416a-8387-6ad16b106d74"],
+ ". This argument assumes independence, which is not quite correct, but \
+simulations show that it is accurate."
+}], "Text",
+ CellChangeTimes->{{3.703928334729745*^9, 3.7039284089825497`*^9}, {
+   3.703928456357424*^9, 3.703928686278824*^9}, {3.703930456730227*^9, 
+   3.7039304589737787`*^9}, {3.7039321922844276`*^9, 3.703932209363256*^9}, 
+   3.703932400788312*^9, {3.703932530617944*^9, 3.703932636816996*^9}, {
+   3.7050249088597937`*^9, 
+   3.705024909818192*^9}},ExpressionUUID->"a86a635a-2e57-42eb-b2b9-\
+7d0a348a33c5"],
+
+Cell[TextData[{
+ "Assuming a genetic map of length 5.88 Morgans, the probability that the \
+closest pair are closer than 0.5cM is 1.7% with 5 loci in total, and 7.4% \
+with 10 loci.  Counting ",
+ StyleBox["ROS/EL/VEN/SULF/FLA",
+  FontSlant->"Italic"],
+ " gives 5 loci.  Thus, finding this close a linkage is unlikely, and indeed, \
+formally significant.  However, clustering of functional loci on the genetic \
+map (e.g. due to tandem duplication of Myb transcription factors), and \
+variation in recombination rate, would increase this probability. Thus, we \
+regard this linkage as suggestive, but not definitive."
+}], "Text",
+ CellChangeTimes->{{3.703928334729745*^9, 3.7039284089825497`*^9}, {
+   3.703928456357424*^9, 3.703928686278824*^9}, {3.703930456730227*^9, 
+   3.7039304589737787`*^9}, {3.7039321922844276`*^9, 3.703932209363256*^9}, 
+   3.703932400788312*^9, {3.703932530617944*^9, 3.703932606935321*^9}, {
+   3.703932766235732*^9, 3.703932847247653*^9}, {3.703932902860312*^9, 
+   3.703933124439159*^9}},ExpressionUUID->"547eba0b-5e32-4b5c-a1ef-\
+1b54926556be"],
+
+Cell[TextData[{
+ "Table Sx1. The probability that the closest pair amongst ",
+ Cell[BoxData[
+  FormBox["k", TraditionalForm]],
+  FormatType->"TraditionalForm",ExpressionUUID->
+  "398d2836-0ac5-4cac-8b78-b29549924ad9"],
+ " genes, thrown down on a linear map of length 5.88 Morgans, are closer than \
+0.5cM"
+}], "Text",
+ CellChangeTimes->{{3.7050249239772453`*^9, 3.705024938313195*^9}, {
+  3.7050249806653023`*^9, 3.705024987445348*^9}, {3.705031658880499*^9, 
+  3.705031693549158*^9}},ExpressionUUID->"f15787fb-f97e-4599-ae12-\
+fe682a3cbe57"],
+
+Cell[BoxData[
+ TagBox[GridBox[{
+    {"k", "P"},
+    {"5", "0.0169"},
+    {"6", "0.0252"},
+    {"7", "0.0351"},
+    {"8", "0.0465"},
+    {"9", "0.0594"},
+    {"10", "0.0737"}
+   },
+   GridBoxAlignment->{
+    "Columns" -> {{Left}}, "ColumnsIndexed" -> {}, "Rows" -> {{Baseline}}, 
+     "RowsIndexed" -> {}},
+   GridBoxSpacings->{"Columns" -> {
+       Offset[0.27999999999999997`], {
+        Offset[2.0999999999999996`]}, 
+       Offset[0.27999999999999997`]}, "ColumnsIndexed" -> {}, "Rows" -> {
+       Offset[0.2], {
+        Offset[0.4]}, 
+       Offset[0.2]}, "RowsIndexed" -> {}}],
+  Function[BoxForm`e$, 
+   TableForm[BoxForm`e$]]]], "Text",
+ CellChangeTimes->{{3.703932879281999*^9, 3.703932883590952*^9}, {
+  3.705024993058311*^9, 
+  3.705025030287323*^9}},ExpressionUUID->"a52ee168-174a-4661-a9bc-\
+3e7abd7141f1"],
+
+Cell[TextData[{
+ "It is actually hard to see how clustering could evolve as a result of gene \
+flow in ",
+ StyleBox["Antirrhinum, ",
+  FontSlant->"Italic"],
+ "which has an extensive geographic  range.  Suppose that one allele becomes \
+established over some broad area, and gives a new floral phenotype that is \
+maintained by positive frequency-dependence.  Further alleles may improve its \
+attractiveness to pollinators, and will be favoured wherever the first allele \
+is sufficiently frequent.  Linkage will aid the establishment of such an \
+allele only within clines where populations are mixed; yet, such clines are  \
+narrow relative to the species\[CloseCurlyQuote] range, and indeed, we have \
+only found a few of them.  Thus, it is hard to see that they can contribute \
+significantly to clustering.  "
+}], "Text",
+ CellChangeTimes->{{3.703933128454295*^9, 3.703933180968746*^9}, {
+  3.703933380294889*^9, 3.703933645756421*^9}, {3.7050317932452793`*^9, 
+  3.705031807883225*^9}},ExpressionUUID->"f70606a8-877c-4456-b375-\
+5e6ab245a5fc"],
+
+Cell["\<\
+Alternatively, one could imagine that pairs of alleles are required to \
+establish a new phenotype within a spatially structured population. The \
+probability that these will established can be greatly enhanced by linkage, \
+simply because such events are extremely rare when neighbourhood size is \
+large  (Rouhani and Barton, 1987).   However, this also makes such a mode of \
+establishment highly improbable: it is more likely that alleles are \
+established one at a time, in which case gene flow has little effect.\
+\>", "Text",
+ CellChangeTimes->{{3.703933649642755*^9, 3.703933768661091*^9}, {
+   3.70393409645308*^9, 3.70393414810352*^9}, {3.7050318150511703`*^9, 
+   3.705031836049919*^9}, 3.705031984559757*^9, {3.7050320199510193`*^9, 
+   3.705032020141397*^9}},ExpressionUUID->"3a14f754-e703-41e5-bdc9-\
+c7549fd038d4"],
+
+Cell[CellGroupData[{
+
+Cell["References", "Subsection",
+ CellChangeTimes->{{3.705023966257596*^9, 
+  3.705023968304119*^9}},ExpressionUUID->"19859aba-8918-4d6d-a644-\
+c9ad3bfbf72f"],
+
+Cell[TextData[{
+ "Rieseberg, L. H. 2001 Chromosomal rearrangements and speciation. ",
+ StyleBox["Trends in Ecology & Evolution ",
+  FontSlant->"Italic"],
+ "16: 351-358."
+}], "Text",
+ CellChangeTimes->{{3.70502397162738*^9, 
+  3.705023992911812*^9}},ExpressionUUID->"b61fa9ac-5033-4dfe-8798-\
+8ce495e26869"],
+
+Cell[TextData[{
+ "Rouhani S., Barton N. H. 1987 Speciation and the \
+\[OpenCurlyDoubleQuote]shifting balance\[CloseCurlyDoubleQuote] in a \
+continuous population. ",
+ StyleBox["Theor. Popul. Biol. ",
+  FontSlant->"Italic"],
+ "31: 465\[Dash]492."
+}], "Text",
+ CellChangeTimes->{{3.705031962934195*^9, 
+  3.705031997382696*^9}},ExpressionUUID->"43e4e528-4061-4f5b-ae9f-\
+fdf5918f85f9"],
+
+Cell[TextData[{
+ "Yeaman S., Aeschbacher S., Burger R., 2016 The evolution of genomic islands \
+by increased establishment probability of linked alleles. ",
+ StyleBox["Mol. Ecol.",
+  FontSlant->"Italic"],
+ " 25: 1\[Dash]41."
+}], "Text",
+ CellChangeTimes->{{3.705024841224744*^9, 
+  3.7050248650881147`*^9}},ExpressionUUID->"00a8e57a-1844-409a-8cc8-\
+929ced326c34"],
+
+Cell[CellGroupData[{
+
+Cell["Check by simulation", "Subsubsection",
+ CellOpen->False,
+ CellChangeTimes->{{3.70393210720564*^9, 
+  3.7039321113094463`*^9}},ExpressionUUID->"0cd7a283-2fc4-4570-a8b3-\
+1bed6649d9dd"],
+
+Cell["The linkage map has total length 5.88M", "Text",
+ CellChangeTimes->{{3.703932153837542*^9, 
+  3.703932177659487*^9}},ExpressionUUID->"571a0d28-a64a-4792-8a9b-\
+9f09d392b771"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Total", "[", 
+  RowBox[{"Last", "/@", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"21", ",", "1.00"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"17", ",", "0.85"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"16", ",", "0.75"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"14", ",", "0.68"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"18", ",", "0.78"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"21", ",", "0.67"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"13", ",", "0.65"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"11", ",", "0.50"}], "}"}]}], "}"}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.703930445002576*^9, 
+  3.7039304514969893`*^9}},ExpressionUUID->"785f3c1b-ff0f-4332-88ca-\
+292e555574e4"],
+
+Cell[BoxData["5.880000000000001`"], "Output",
+ CellChangeTimes->{
+  3.7039304518118677`*^9},ExpressionUUID->"ad53260c-f76d-4822-b044-\
+3545ec7c22ee"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Table", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"k", ",", 
+       RowBox[{"1", "-", 
+        RowBox[{"Exp", "[", 
+         RowBox[{
+          RowBox[{"-", "k"}], 
+          RowBox[{"(", 
+           RowBox[{"k", "-", "1"}], ")"}], 
+          FractionBox["\[Epsilon]", "R"]}], "]"}]}]}], "}"}], "/.", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"R", "\[Rule]", "5.88"}], ",", 
+       RowBox[{"\[Epsilon]", "\[Rule]", "0.005"}]}], "}"}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{"k", ",", "5", ",", "10"}], "}"}]}], "]"}], "//", 
+  "TableForm"}]], "Input",
+ CellChangeTimes->{{3.703928688127144*^9, 3.703928718933465*^9}, 
+   3.7039304619631243`*^9, {3.7039307134828663`*^9, 3.703930718184857*^9}, {
+   3.703932777091138*^9, 3.7039327779703093`*^9}, {3.70393285409634*^9, 
+   3.703932883094626*^9}},ExpressionUUID->"7089a5a2-5e2d-421a-bc04-\
+4b128678f43d"],
+
+Cell[BoxData[
+ TagBox[GridBox[{
+    {"5", "0.016863003394618326`"},
+    {"6", "0.025187568150640494`"},
+    {"7", "0.03508405562762995`"},
+    {"8", "0.04650304516652326`"},
+    {"9", "0.0593879417361487`"},
+    {"10", "0.07367544301940943`"}
+   },
+   GridBoxAlignment->{
+    "Columns" -> {{Left}}, "ColumnsIndexed" -> {}, "Rows" -> {{Baseline}}, 
+     "RowsIndexed" -> {}},
+   GridBoxSpacings->{"Columns" -> {
+       Offset[0.27999999999999997`], {
+        Offset[2.0999999999999996`]}, 
+       Offset[0.27999999999999997`]}, "ColumnsIndexed" -> {}, "Rows" -> {
+       Offset[0.2], {
+        Offset[0.4]}, 
+       Offset[0.2]}, "RowsIndexed" -> {}}],
+  Function[BoxForm`e$, 
+   TableForm[BoxForm`e$]]]], "Output",
+ CellChangeTimes->{
+  3.705024968520197*^9},ExpressionUUID->"a89d21da-1a64-41f5-ac7f-\
+b29a38f622bb"]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"minInt", "[", "z_", "]"}], ":=", 
+   RowBox[{"Module", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"sz", "=", 
+       RowBox[{"Sort", "[", "z", "]"}]}], "}"}], ",", 
+     RowBox[{"Min", "[", 
+      RowBox[{
+       RowBox[{"Drop", "[", 
+        RowBox[{"sz", ",", "1"}], "]"}], "-", 
+       RowBox[{"Drop", "[", 
+        RowBox[{"sz", ",", 
+         RowBox[{"-", "1"}]}], "]"}]}], "]"}]}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.703929029023337*^9, 3.7039290767392187`*^9}, {
+  3.7039291307063723`*^9, 
+  3.703929160097521*^9}},ExpressionUUID->"a4895c0f-524c-47dd-9554-\
+c9b59359cb8d"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"del", "=", "0.00004"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"bc10", "=", 
+   RowBox[{"BinCounts", "[", 
+    RowBox[{
+     RowBox[{"minInt", "/@", 
+      RowBox[{"RandomReal", "[", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"0", ",", "1"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{
+          SuperscriptBox["10", "4"], ",", "40"}], "}"}]}], "]"}]}], ",", 
+     RowBox[{"{", 
+      RowBox[{"0", ",", "0.1", ",", "del"}], "}"}]}], "]"}]}], ";", 
+  RowBox[{"tt", "=", 
+   RowBox[{"Transpose", "[", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"Range", "[", 
+       RowBox[{
+        FractionBox["del", "2"], ",", 
+        RowBox[{"0.1", "-", 
+         FractionBox["del", "2"]}], ",", "del"}], "]"}], ",", "bc10"}], "}"}],
+     "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{"ListLogPlot", "[", "tt", "]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"st", "=", 
+   RowBox[{"Select", "[", 
+    RowBox[{"tt", ",", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"#", "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}], 
+       "<", "0.0015"}], "&"}]}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"Fit", "[", 
+    RowBox[{
+     RowBox[{"st", "/.", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"x_", ",", "y_"}], "}"}], "\[RuleDelayed]", 
+       RowBox[{"{", 
+        RowBox[{"x", ",", 
+         RowBox[{"Log", "[", "y", "]"}]}], "}"}]}]}], ",", 
+     RowBox[{"{", 
+      RowBox[{"1", ",", "x"}], "}"}], ",", "x"}], "]"}], ",", 
+   RowBox[{"Length", "[", "st", "]"}]}], "}"}]}], "Input",
+ CellChangeTimes->{{3.703929098711113*^9, 3.703929120266564*^9}, {
+   3.703929287980569*^9, 3.7039294987499533`*^9}, {3.703929574330678*^9, 
+   3.703929617490665*^9}, 3.703929649851552*^9, {3.7039296807548313`*^9, 
+   3.703929681144623*^9}, {3.703929713393989*^9, 
+   3.703929830268015*^9}},ExpressionUUID->"4962e5b4-261a-414e-bb7e-\
+b49b72674b9e"],
+
+Cell[BoxData[
+ GraphicsBox[{{{}, {{{}, {
+       {RGBColor[0.368417, 0.506779, 0.709798], PointSize[
+        0.009166666666666668], AbsoluteThickness[1.6], 
+        PointBox[CompressedData["
+1:eJxFkwk01Fscx+1iGEszY8kSUq+mlBER+d2o7D3UmOxjGTR2sieJUqKStiOn
+lErWUk0qtHlNPWVekkg8xNMLL0S2LC/n1P3fc+6553O+39/3e87vnKvlG+7M
+ERESEuL+uAvvSFDPYd7kmPnO0cqQ6iYVxFVnOsjHyIHtMK0ynaOC1liqDXw0
+UoU8K0asMksFNX3nt1xw1Ya7LaPrFZ8rI7l38yavzq6A1sBT4RXlysjupnH+
+VPNqEFh5kb6pKaMtz4xTFkvrQ1Hp29aJQSXky2CuW1VsgHn/xchuZG0EzXZP
+3bq1lNEFmWMnWZ+MYXics6/rkhKqSSixDDtkCkMQZtMtroTa+vhj6brmMDrN
+f9beRkOzxSNvHHwRrOYVMmeqaSirK4X+vnIz8DwS2awQGlqiRE73F7aEzoGi
+GFY+FZU45LcPOW6B1M9ajz7a0JBJ+irDpIKtYPTV7Te7Tip68eBetsTwNkh2
+B7M7O6mINbKtLwesobHsr9FloVTUt6LZXP24DRgN9nWUSVJRjJff2et/20JS
+c4KsEJuCxE6PDBno2YPHItX950woKPdlivWjZAfwbuF5NcVTkLYI+ZJtw3bo
+5a7cOJuxGLmqCWa4ZEfMBRuoxevuOkL2bSn6w05F9K+zB3Pc0wnra8MKhWvE
+naEq4pqrHnUxijvSX55a7gy1zzM6J1MU0cMr+m5WzB2QyxnO9ShSRBKP4yVk
+Z3fAeGaFkueYAnL48OjWmys7sf/0uIT3OXsmHOj1ze4tU0AdCttJXmNMMGPY
+Z5DZCmjZmtNVOvkuYCKoLuB3yaMQ63a/z5YsOMrgtJ9ny6PbfjryNwZYIBui
+OHA4Uh5938et2ZO7C24sKat6YyeHLPIqgzaaumI9kzdJEepxhSt/FsaS9pBR
+42t48izTDWyKK0p08+WQyuCh0KMMd4ipdjQzniQjtqRAxamN4OvaVD7tgAf2
+D23yiGpf6Qlu9BxrQTwJbXAt1Ljc6Ann35GmrhmS0L49/fWBCV6gOdfw0nhY
+GvGP68et0fKGBtXh/lPy0ohcGq8z+sIb++k9nYEexmwwyP5vYvNjKSSIEDWH
+LDaMy95PnTGUQVFzyynaXWzsp2XZ9out94GcnugkiwlJ9EAl7PGnDB+c71mU
+c6b+gw/QmLzqymARJGzICylf6wtOWfp0sYNi6OrTVosTab5QVN1Cq1cTRzaO
+M8rRLYQ+2KE5xKT7gaa1gwmtRBydCLb88aP8cN76qYDzS5oIbj2UGTm33B+S
+LzTV0LpFURKlwqo70R9IouWJ/bnCSPNyo/ofAn+cV7f22+g1bQ5El5rCrctC
+KLBWuf5ILAdElq6aJpXOAMnOrCCknoPnK1q9Y3/XCMDsHJBmz4gK+LmvKRj/
+kUblE5yXWj85oRL40z8Cm+S+CNpCA3F+d77C1donhH5w4TtSg/D8ynu7nNJ2
+B2H/q617VwTUBmF/RNPFWWuF3cByY1REac8Dxaeuic7ZDUMm03MWeuNw70tf
+Mfn+L+4D973S+0dkuHh+XkrP5S2bC0I/T+FZp9VVd7i430o3RiRvUTD2H0M1
+Fd43g7HOEHSmW4iF4Px37qLuursIVo+zlRyYJ/iJWFhHw45Q3Mc5mXP7ZlEo
+1qWW8o7kfif0svKFhYfhfkfTGUPXQoLHXmjKmE2E4flzLpYfNezC8XxnZOax
+3q8EP513ueWnE0H0Zyce3hZHcEr4wkIjMTsZ/SM9FEXwWN2i7kY+wfxMVfu6
+4UjcnzZ9xsSTFo31uffHKTk+MZhfF1xKOXCU4GobGRF6Rizm0uSNGgaOCZj/
+Byw3zK0=
+         "]]}}, {}}}, {}, {}, {{}, {}}, {{}, {}}}},
+  AspectRatio->NCache[GoldenRatio^(-1), 0.6180339887498948],
+  Axes->{True, True},
+  AxesLabel->{None, None},
+  AxesOrigin->{0, -0.46863650725927},
+  DisplayFunction->Identity,
+  Frame->{{False, False}, {False, False}},
+  FrameLabel->{{None, None}, {None, None}},
+  FrameTicks->{{
+     Charting`ScaledTicks[{Log, Exp}], 
+     Charting`ScaledFrameTicks[{Log, Exp}]}, {Automatic, Automatic}},
+  GridLines->{None, None},
+  GridLinesStyle->Directive[
+    GrayLevel[0.5, 0.4]],
+  ImagePadding->All,
+  Method->{"CoordinatesToolOptions" -> {"DisplayFunction" -> ({
+        (Identity[#]& )[
+         Part[#, 1]], 
+        (Exp[#]& )[
+         Part[#, 2]]}& ), "CopiedValueFunction" -> ({
+        (Identity[#]& )[
+         Part[#, 1]], 
+        (Exp[#]& )[
+         Part[#, 2]]}& )}},
+  PlotRange->{{0, 0.006180000000000001}, {-0.3587094253095646, 
+    6.456769655572163}},
+  PlotRangeClipping->True,
+  PlotRangePadding->{{
+     Scaled[0.02], 
+     Scaled[0.02]}, {
+     Scaled[0.02], 
+     Scaled[0.05]}},
+  Ticks->FrontEndValueCache[{Automatic, 
+     Charting`ScaledTicks[{Log, Exp}]}, {Automatic, {{0., 
+       FormBox["1", TraditionalForm], {0.01, 0.}, {
+        AbsoluteThickness[0.1]}}, {1.6094379124341003`, 
+       FormBox["5", TraditionalForm], {0.01, 0.}, {
+        AbsoluteThickness[0.1]}}, {2.302585092994046, 
+       FormBox["10", TraditionalForm], {0.01, 0.}, {
+        AbsoluteThickness[0.1]}}, {3.912023005428146, 
+       FormBox["50", TraditionalForm], {0.01, 0.}, {
+        AbsoluteThickness[0.1]}}, {4.605170185988092, 
+       FormBox["100", TraditionalForm], {0.01, 0.}, {
+        AbsoluteThickness[0.1]}}, {6.214608098422191, 
+       FormBox["500", TraditionalForm], {0.01, 0.}, {
+        AbsoluteThickness[0.1]}}, {-0.6931471805599453, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {-0.5108256237659907, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {-0.35667494393873245`, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {-0.2231435513142097, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {-0.10536051565782628`, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {0.6931471805599453, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {1.0986122886681098`, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {1.3862943611198906`, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {1.791759469228055, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {1.9459101490553132`, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {2.0794415416798357`, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {2.1972245773362196`, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {2.995732273553991, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {3.4011973816621555`, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {3.6888794541139363`, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {4.0943445622221, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {4.248495242049359, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {4.382026634673881, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {4.499809670330265, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {5.298317366548036, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {5.703782474656201, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {5.991464547107982, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {6.396929655216146, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {6.551080335043404, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {6.684611727667927, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {6.802394763324311, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {6.907755278982137, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {7.313220387090301, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}, {7.600902459542082, 
+       FormBox[
+        InterpretationBox[
+         StyleBox[
+          
+          GraphicsBox[{}, ImageSize -> {0., 0.}, BaselinePosition -> 
+           Baseline], "CacheGraphics" -> False], 
+         Spacer[{0., 0.}], Selectable -> False], TraditionalForm], {0.005, 
+       0.}, {
+        AbsoluteThickness[0.1]}}}}]]], "Output",
+ CellChangeTimes->{
+  3.703929332860655*^9, {3.703929439350604*^9, 3.7039294992874527`*^9}, {
+   3.70392958498422*^9, 3.703929617912014*^9}, 3.7039296502911663`*^9, 
+   3.703929681664929*^9, 3.703929714313809*^9, {3.703929772427703*^9, 
+   3.703929830833338*^9}},ExpressionUUID->"cddc52e6-efd1-485a-82e7-\
+1327be812fbe"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"6.459335519158991`", "\[VeryThinSpace]", "-", 
+    RowBox[{"1585.6332323784275`", " ", "x"}]}], ",", "37"}], "}"}]], "Output",\
+
+ CellChangeTimes->{
+  3.703929332860655*^9, {3.703929439350604*^9, 3.7039294992874527`*^9}, {
+   3.70392958498422*^9, 3.703929617912014*^9}, 3.7039296502911663`*^9, 
+   3.703929681664929*^9, 3.703929714313809*^9, {3.703929772427703*^9, 
+   3.703929830865776*^9}},ExpressionUUID->"a349e89e-972f-487f-8bd2-\
+f87417681fa0"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"ff", "=", 
+   RowBox[{GridBox[{
+      {"5", "15.53"},
+      {"7", "39.08"},
+      {"10", "88.845"},
+      {"15", "214.85"},
+      {"20", "379.88"},
+      {"30", "889.54"},
+      {"40", "1585.63"}
+     }], "/.", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"x_", ",", "y_"}], "}"}], "\[RuleDelayed]", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"x", 
+        RowBox[{"(", 
+         RowBox[{"x", "-", "1"}], ")"}]}], ",", "y"}], "}"}]}]}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"ft", "=", 
+   RowBox[{"Fit", "[", 
+    RowBox[{"ff", ",", 
+     RowBox[{"{", 
+      RowBox[{"1", ",", "x"}], "}"}], ",", "x"}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{"Show", "[", 
+  RowBox[{
+   RowBox[{"ListPlot", "[", "ff", "]"}], ",", 
+   RowBox[{"Plot", "[", 
+    RowBox[{"ft", ",", 
+     RowBox[{"{", 
+      RowBox[{"x", ",", "0", ",", "1500"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"PlotStyle", "\[Rule]", "Red"}], "}"}]}], "]"}]}], 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{"ft", "\[IndentingNewLine]"}], "\[IndentingNewLine]"}], "Input",
+ CellChangeTimes->{{3.703929689584136*^9, 3.703929696361144*^9}, {
+  3.70392985935388*^9, 
+  3.7039299839854307`*^9}},ExpressionUUID->"18975cc8-31ab-44b1-8401-\
+64927f39b1b3"],
+
+Cell[BoxData[
+ GraphicsBox[{{{}, {{{}, {
+       {RGBColor[0.368417, 0.506779, 0.709798], PointSize[
+        0.012833333333333334`], AbsoluteThickness[1.6], 
+        PointBox[{{20., 15.53}, {42., 39.08}, {90., 88.845}, {210., 214.85}, {
+         380., 379.88}, {870., 889.54}, {1560., 
+         1585.63}}]}}, {}}}, {}, {}, {{}, {}}, {{}, {}}}, {{{{}, {}, 
+      TagBox[{
+        {RGBColor[1, 0, 0], AbsoluteThickness[1.6], Opacity[1.], 
+         LineBox[CompressedData["
+1:eJwVkHk41HkAh6mVxJTdR5mHJJGSdawzcnw0KIrctJ7alSty9Mtt3DKuEYOZ
+r0Qrdux2UClXWMna5jGrkiMrUbFLbqrNpB7b/vE+71/vP6/KqXAX/3ViYmIO
+X/jfug1tzXdlxCwjip2lGlY33teMNXL4h3phqbBCC3tgKnHfgOOrUE3NWXZ4
+dz99FCd+v1npoxiL+my5w5a1//HC2/ZVX5t3URQNTiZajEs6E5bbJWfmQikl
+5NEjBzqyv0bNUNt0EKWF64kCz5uCPYiy2vMmkDKHya1luvqUKV4et+EE1jpC
+pkDunH6LAxyMrKxruj0w6pw8uy3GAy/ohh9b6CfRdJYZGTx9Ak2Djmn8db44
+IzqZcGftFAI/7B41qw/AmaU+i71dAaBTxn5yjcHYohiSTD0PxikSkWlUHQb9
+x4em+aNh2Gh/Ff17KaiWtwSfdqTw8l29i5Z6BJJm/JSn3CMws0nOqVY8Ci5b
+98uNm0bhYIxkWX9fNPy/0rrsui0GCrL0z6U9sbBn6wdqK8Rht1y8XTY/Hr8s
++J49vxqP29aia/L8BAzO8JusJRKRLaR5H7mUBJsaKV68RDK6R02YfcYp2MYX
+/sWlUiAbxnTtNUzFsqViVlVkKhbq/FXGd6UhR5A8GBaQhi0XRkW/q6aDrRRq
+HR6SDne5yjiR8nlouc8kXAs9DwOnzQtW0hnIiU9yrzqRAbddUuHfb2LBOaTU
+odeHBdq1GxOsFRb6jgj/bnXLxOxIqfiG15l4T8s7PH4wCzLV8hruY1lIKXvW
+bWGTjS41c9smYTYe0o3nPI1y0G6yFDojzEGMj7JO9YFcjIkWzKiHuRCwSw7o
+mLFREk7EpevY6OOrT0Vp5qGQ2fMk8lYe7HLN7y5pX8Bu8xvc5fILiD8ZtFNT
+JR+jVwfEO1n5UN9UdP2YZAFCBm1bb1sVgCGs91DLKkCDXsxybmMBLNaP93qK
+cbBzeF7L0ZiDsCv9I/w0DjxHTP1KazlIaHjS6PKJAxWDb+fzVQsxbLZ1pSyi
+ENLP/BJDKwsRorFDIP6+EA/6KckBehFG2N+d7gotwkWlP3hqF4uQ6iFVUrVY
+hPWt7XFK8sWI5mhoKVPFMK3P86xgF8OO4VYomioGR1RpKi3DhZM3I3M+mIv6
+EjZdLJ0Lw2mzowcnuAjJU7S//IGL4OmkaH1vHhg9Sylq0Tz0O2XoWo7wMBlY
+Vmcwy8N2bd69q24EoyO3xxjzPBx3ZQR1ehD0Oz+UcV3koTh2Uf6FF8GDA8sB
+1DseNnfaR8meILi85bBi7ScexL3WdGL8CTwa36bvoRFMpp7mW0cTdG044q6g
+TXBnwLRgjBC0Mn9M09AlWPw4aSG6SFC3GHVzvx6B5k7u3DdlBBXDFVKeRgT8
+4AV72wqChNp/24osCErWqiRqfiUw8KhUpx0jSNKgMeObv3TCRtftzgQtjvc0
+ilsIdqEnRdOVYCUicKimjUB238qwnScB9VuH4asOgtnPDvmsHwj8XaMXD3UT
+jJ/zbeX6EFyJVf3J50+C4cnYNz/7fvlQ/sSB+YhA0FvF6Awk8Jrad732KUG7
+bfPZp0EEXNrQcUE/QUPLo/JXZwh69TI2vh4kuKE70b0YSkDz0mtcHSKo4os+
+rIUT2CeO+W99TvAffRtEzQ==
+          "]]}},
+       Annotation[#, "Charting`Private`Tag$158075#1"]& ]}}, {}, {}}},
+  AspectRatio->NCache[GoldenRatio^(-1), 0.6180339887498948],
+  Axes->{True, True},
+  AxesLabel->{None, None},
+  AxesOrigin->{0, 0},
+  DisplayFunction->Identity,
+  Frame->{{False, False}, {False, False}},
+  FrameLabel->{{None, None}, {None, None}},
+  FrameTicks->{{Automatic, Automatic}, {Automatic, Automatic}},
+  GridLines->{None, None},
+  GridLinesStyle->Directive[
+    GrayLevel[0.5, 0.4]],
+  ImagePadding->All,
+  Method->{"CoordinatesToolOptions" -> {"DisplayFunction" -> ({
+        (Identity[#]& )[
+         Part[#, 1]], 
+        (Identity[#]& )[
+         Part[#, 2]]}& ), "CopiedValueFunction" -> ({
+        (Identity[#]& )[
+         Part[#, 1]], 
+        (Identity[#]& )[
+         Part[#, 2]]}& )}},
+  PlotRange->{{0, 1560.}, {0, 1585.63}},
+  PlotRangeClipping->True,
+  PlotRangePadding->{{
+     Scaled[0.02], 
+     Scaled[0.02]}, {
+     Scaled[0.02], 
+     Scaled[0.05]}},
+  Ticks->{Automatic, Automatic}]], "Output",
+ CellChangeTimes->{
+  3.703929696624238*^9, {3.7039298600029716`*^9, 3.7039299124059677`*^9}, {
+   3.703929955414958*^9, 
+   3.703929984692238*^9}},ExpressionUUID->"5d535b6c-0dad-4c49-95a0-\
+4bb1d39c40a5"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"-", "3.122937022954453`"}], "+", 
+  RowBox[{"1.0199292431149691`", " ", "x"}]}]], "Output",
+ CellChangeTimes->{
+  3.703929696624238*^9, {3.7039298600029716`*^9, 3.7039299124059677`*^9}, {
+   3.703929955414958*^9, 
+   3.703929984696748*^9}},ExpressionUUID->"b02aaf9d-a7d6-468d-b89c-\
+b442f9015b4d"]
+}, Open  ]]
+}, Closed]]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1217, 1151},
+WindowMargins->{{117, Automatic}, {Automatic, 0}},
+Magnification:>1.25 Inherited,
+FrontEndVersion->"11.3 for Mac OS X x86 (32-bit, 64-bit Kernel) (March 5, \
+2018)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 350, 5, 84, "Section",ExpressionUUID->"be8b6c72-aa5c-48d1-8cc8-1c602e27d200"],
+Cell[933, 29, 1267, 27, 188, "Text",ExpressionUUID->"acda0d2f-3213-4e27-ac0b-63952d564c17"],
+Cell[2203, 58, 2114, 55, 131, "Text",ExpressionUUID->"a86a635a-2e57-42eb-b2b9-7d0a348a33c5"],
+Cell[4320, 115, 1075, 18, 131, "Text",ExpressionUUID->"547eba0b-5e32-4b5c-a1ef-1b54926556be"],
+Cell[5398, 135, 542, 12, 73, "Text",ExpressionUUID->"f15787fb-f97e-4599-ae12-fe682a3cbe57"],
+Cell[5943, 149, 818, 25, 196, "Text",ExpressionUUID->"a52ee168-174a-4661-a9bc-3e7abd7141f1"],
+Cell[6764, 176, 1049, 18, 188, "Text",ExpressionUUID->"f70606a8-877c-4456-b375-5e6ab245a5fc"],
+Cell[7816, 196, 839, 13, 131, "Text",ExpressionUUID->"3a14f754-e703-41e5-bdc9-c7549fd038d4"],
+Cell[CellGroupData[{
+Cell[8680, 213, 158, 3, 67, "Subsection",ExpressionUUID->"19859aba-8918-4d6d-a644-c9ad3bfbf72f"],
+Cell[8841, 218, 306, 8, 44, "Text",ExpressionUUID->"b61fa9ac-5033-4dfe-8798-8ce495e26869"],
+Cell[9150, 228, 383, 10, 44, "Text",ExpressionUUID->"43e4e528-4061-4f5b-ae9f-fdf5918f85f9"],
+Cell[9536, 240, 364, 9, 73, "Text",ExpressionUUID->"00a8e57a-1844-409a-8cc8-929ced326c34"],
+Cell[CellGroupData[{
+Cell[9925, 253, 189, 4, 27, "Subsubsection",ExpressionUUID->"0cd7a283-2fc4-4570-a8b3-1bed6649d9dd",
+ CellOpen->False],
+Cell[10117, 259, 180, 3, 59, "Text",ExpressionUUID->"571a0d28-a64a-4792-8a9b-9f09d392b771"],
+Cell[CellGroupData[{
+Cell[10322, 266, 778, 23, 62, "Input",ExpressionUUID->"785f3c1b-ff0f-4332-88ca-292e555574e4"],
+Cell[11103, 291, 149, 3, 62, "Output",ExpressionUUID->"ad53260c-f76d-4822-b044-3545ec7c22ee"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[11289, 299, 916, 25, 87, "Input",ExpressionUUID->"7089a5a2-5e2d-421a-bc04-4b128678f43d"],
+Cell[12208, 326, 816, 23, 251, "Output",ExpressionUUID->"a89d21da-1a64-41f5-ac7f-b29a38f622bb"]
+}, Open  ]],
+Cell[13039, 352, 648, 19, 62, "Input",ExpressionUUID->"a4895c0f-524c-47dd-9554-c9b59359cb8d"],
+Cell[CellGroupData[{
+Cell[13712, 375, 1951, 55, 307, "Input",ExpressionUUID->"4962e5b4-261a-414e-bb7e-b49b72674b9e"],
+Cell[15666, 432, 13974, 348, 476, "Output",ExpressionUUID->"cddc52e6-efd1-485a-82e7-1327be812fbe"],
+Cell[29643, 782, 501, 11, 62, "Output",ExpressionUUID->"a349e89e-972f-487f-8bd2-f87417681fa0"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[30181, 798, 1283, 42, 492, "Input",ExpressionUUID->"18975cc8-31ab-44b1-8401-64927f39b1b3"],
+Cell[31467, 842, 3362, 73, 464, "Output",ExpressionUUID->"5d535b6c-0dad-4c49-95a0-4bb1d39c40a5"],
+Cell[34832, 917, 332, 8, 62, "Output",ExpressionUUID->"b02aaf9d-a7d6-468d-b89c-b442f9015b4d"]
+}, Open  ]]
+}, Closed]]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
