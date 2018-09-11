@@ -8,3 +8,5 @@ The raw sequence data is available from NCBI Gene Expression Omnibus (GEO) acces
 * The script used for calculating population genetic statistics from pool-seq 
 data is available [here](https://github.com/dfield007/slidingWindows)
 
+* All simulations were done in Mathematica. We provide with mathematica notebook files, which can be opened with the freely available [MathReader](https://www.wolfram.com/cdf-player/) program. 
+
